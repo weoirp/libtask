@@ -156,15 +156,15 @@ struct Task
 	char	state[256];
 	Task	*next;
 	Task	*prev;
-	Task	*allnext;
-	Task	*allprev;
+	Task	*allnext;		// 没用到
+	Task	*allprev;		// 没用到
 	Context	context;
-	uvlong	alarmtime;
+	uvlong	alarmtime;		// 延时任务时间戳
 	uint	id;
-	uchar	*stk;
-	uint	stksize;
+	uchar	*stk;			// 栈起始地址
+	uint	stksize;		// 栈大小
 	int	exiting;
-	int	alltaskslot;
+	int	alltaskslot;		// alltask数组的index
 	int	system;
 	int	ready;
 	void	(*startfn)(void*);

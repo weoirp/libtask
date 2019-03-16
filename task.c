@@ -8,12 +8,12 @@ int	taskdebuglevel;
 int	taskcount;
 int	tasknswitch;
 int	taskexitval;
-Task	*taskrunning;
+Task	*taskrunning;		// 当前执行的task
 
 Context	taskschedcontext;
-Tasklist	taskrunqueue;
+Tasklist	taskrunqueue;		// 就绪队列
 
-Task	**alltask;
+Task	**alltask;			// task 数组
 int		nalltask;
 
 static char *argv0;
@@ -164,6 +164,7 @@ tasksystem(void)
 	}
 }
 
+// 保存当前上下文到taskrunning->context, 设置当前上下文为taskschedcontext
 void
 taskswitch(void)
 {
@@ -207,7 +208,7 @@ taskexit(int val)
 {
 	taskexitval = val;
 	taskrunning->exiting = 1;
-	taskswitch();
+	taskswitch();		// 待下一轮调度时，删除该任务
 }
 
 static void
@@ -242,6 +243,7 @@ taskscheduler(void)
 		contextswitch(&taskschedcontext, &t->context);
 //print("back in scheduler\n");
 		taskrunning = nil;
+		// 每次调度删除退出的task
 		if(t->exiting){
 			if(!t->system)
 				taskcount--;

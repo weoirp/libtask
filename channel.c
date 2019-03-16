@@ -69,7 +69,7 @@ chanarray(Channel *c, uint op)
 }
 
 static int
-altcanexec(Alt *a)
+altcanexec(Alt *a)		//检查是否能发送或接收
 {
 	Altarray *ar;
 	Channel *c;
@@ -77,23 +77,23 @@ altcanexec(Alt *a)
 	if(a->op == CHANNOP)
 		return 0;
 	c = a->c;
-	if(c->bufsize == 0){
+	if(c->bufsize == 0){	// 无缓存的channel
 		ar = chanarray(c, otherop(a->op));
 		return ar && ar->n;
-	}else{
+	}else{		// 有缓存的channel 
 		switch(a->op){
 		default:
 			return 0;
 		case CHANSND:
-			return c->nbuf < c->bufsize;
+			return c->nbuf < c->bufsize;	// send 时须buff放得下
 		case CHANRCV:
-			return c->nbuf > 0;
+			return c->nbuf > 0;		// recv 时须buff有数据
 		}
 	}
 }
 
 static void
-altqueue(Alt *a)
+altqueue(Alt *a)	//放入Altarray
 {
 	Altarray *ar;
 
@@ -102,7 +102,7 @@ altqueue(Alt *a)
 }
 
 static void
-altdequeue(Alt *a)
+altdequeue(Alt *a)		//从Altarray 删除
 {
 	int i;
 	Altarray *ar;
@@ -240,7 +240,7 @@ chanalt(Alt *a)
 	}
 if(dbgalt) print("alt ");
 	ncan = 0;
-	for(i=0; i<n; i++){
+	for(i=0; i<n; i++){		// 从ncan个可执行alt中随机选一个执行
 		c = a[i].c;
 if(dbgalt) print(" %c:", "esrnb"[a[i].op]);
 if(dbgalt) { if(c->name) print("%s", c->name); else print("%p", c); }
@@ -250,7 +250,7 @@ if(dbgalt) print("*");
 		}
 	}
 	if(ncan){
-		j = rand()%ncan;
+		j = rand()%ncan;		
 		for(i=0; i<n; i++){
 			if(altcanexec(&a[i])){
 				if(j-- == 0){

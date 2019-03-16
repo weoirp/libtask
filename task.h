@@ -116,19 +116,19 @@ struct Alt
 struct Altarray
 {
 	Alt		**a;
-	unsigned int	n;
-	unsigned int	m;
+	unsigned int	n;		// len
+	unsigned int	 m;		// size
 };
 
 struct Channel
 {
-	unsigned int	bufsize;
-	unsigned int	elemsize;
-	unsigned char	*buf;
-	unsigned int	nbuf;
-	unsigned int	off;
-	Altarray	asend;
-	Altarray	arecv;
+	unsigned int	bufsize;		// 缓冲多少个元素
+	unsigned int	elemsize;		// 元素的大小
+	unsigned char	*buf;		// data
+	unsigned int	nbuf;		// 已经使用多少个元素
+	unsigned int	off;		// 读偏移
+	Altarray	asend;		// 往该channel send 的 Alt数组
+	Altarray	arecv;		// 往该channel recv 的 Alt数组
 	char		*name;
 };
 

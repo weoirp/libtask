@@ -31,6 +31,7 @@ fdtask(void *v)
 		/* we're the only one runnable - poll for i/o */
 		errno = 0;
 		taskstate("poll");
+		// 没有定时任务永久睡眠
 		if((t=sleeping.head) == nil)
 			ms = -1;
 		else{
@@ -53,6 +54,7 @@ fdtask(void *v)
 		/* wake up the guys who deserve it */
 		for(i=0; i<npollfd; i++){
 			while(i < npollfd && pollfd[i].revents){
+				// 有读写事件的task加入就绪队列
 				taskready(polltask[i]);
 				--npollfd;
 				pollfd[i] = pollfd[npollfd];
@@ -61,6 +63,7 @@ fdtask(void *v)
 		}
 		
 		now = nsec();
+		// 删除超时的定时任务，并加入就绪队列
 		while((t=sleeping.head) && now >= t->alarmtime){
 			deltask(&sleeping, t);
 			if(!t->system && --sleepingcounted == 0)
@@ -70,6 +73,7 @@ fdtask(void *v)
 	}
 }
 
+// 链表实现的定时器
 uint
 taskdelay(uint ms)
 {
