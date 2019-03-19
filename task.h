@@ -116,8 +116,8 @@ struct Alt
 struct Altarray
 {
 	Alt		**a;
-	unsigned int	n;		// len
-	unsigned int	 m;		// size
+	unsigned int	n;		// size
+	unsigned int	 m;		// capacity
 };
 
 struct Channel

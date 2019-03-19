@@ -212,13 +212,23 @@ altexec(Alt *a)
 		i = rand()%ar->n;
 		other = ar->a[i];
 		altcopy(a, other);
-		altalldequeue(other->xalt);
-		other->xalt[0].xalt = other;
+		altalldequeue(other->xalt);		//将这些alt从channel相应的数组删除
+		other->xalt[0].xalt = other;	//other->xalt为数组首地址， 该数组第一个alt.xalt 存储执行的那个alt, 
+										//chanalt return的时候使用到，感觉没啥用啊，直接return 0不就行了嘛
 		taskready(other->task);
 	}else
 		altcopy(a, nil);
 }
-
+/*
+e.g.
+Alts send  ->  channel  ->  Alts recv
+		+-+									+-+
+	a	+-+					c				+-+		other
+		+-+		-> 		+-+-+-+-+	->		+-+			
+		+-+				+-+-+-+-+			+-+
+		+-+									+-+
+		+-+									+-+
+*/
 #define dbgalt 0
 int
 chanalt(Alt *a)
