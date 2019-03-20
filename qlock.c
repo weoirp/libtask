@@ -6,12 +6,14 @@
 static int
 _qlock(QLock *l, int block)
 {
+	// 没有被占有的情况下，获得锁
 	if(l->owner == nil){
 		l->owner = taskrunning;
 		return 1;
 	}
 	if(!block)
 		return 0;
+	// 阻塞情况下，加入等待队列
 	addtask(&l->waiting, taskrunning);
 	taskstate("qlock");
 	taskswitch();
@@ -43,6 +45,7 @@ qunlock(QLock *l)
 		fprint(2, "qunlock: owner=0\n");
 		abort();
 	}
+	// 如果等待队列不为空，等待队列第一个task获得锁，并唤醒
 	if((l->owner = ready = l->waiting.head) != nil){
 		deltask(&l->waiting, ready);
 		taskready(ready);
@@ -52,12 +55,14 @@ qunlock(QLock *l)
 static int
 _rlock(RWLock *l, int block)
 {
+	// 没有写者 且 写等待队列为空
 	if(l->writer == nil && l->wwaiting.head == nil){
-		l->readers++;
+		l->readers++;	// 读者加1
 		return 1;
 	}
 	if(!block)
 		return 0;
+	// 阻塞情况下，加入读等待队列
 	addtask(&l->rwaiting, taskrunning);
 	taskstate("rlock");
 	taskswitch();
@@ -79,12 +84,14 @@ canrlock(RWLock *l)
 static int
 _wlock(RWLock *l, int block)
 {
+	// 没有写者 且 没有读者
 	if(l->writer == nil && l->readers == 0){
-		l->writer = taskrunning;
+		l->writer = taskrunning;	//获得锁
 		return 1;
 	}
 	if(!block)
 		return 0;
+	// 阻塞情况下，加入写等待队列
 	addtask(&l->wwaiting, taskrunning);
 	taskstate("wlock");
 	taskswitch();
@@ -108,10 +115,11 @@ runlock(RWLock *l)
 {
 	Task *t;
 
+	// 没有读者 但 有等待的写者
 	if(--l->readers == 0 && (t = l->wwaiting.head) != nil){
-		deltask(&l->wwaiting, t);
-		l->writer = t;
-		taskready(t);
+		deltask(&l->wwaiting, t); 
+		l->writer = t;	// 第一个等待的写者获得锁
+		taskready(t);	// 唤醒该写者
 	}
 }
 
@@ -129,11 +137,13 @@ wunlock(RWLock *l)
 		fprint(2, "wunlock: readers\n");
 		abort();
 	}
+	// 唤醒所有等待读者
 	while((t = l->rwaiting.head) != nil){
 		deltask(&l->rwaiting, t);
 		l->readers++;
 		taskready(t);
 	}
+	// 如果没有等待的读者 但 有等待的写者，唤醒第一个等待的写者
 	if(l->readers == 0 && (t = l->wwaiting.head) != nil){
 		deltask(&l->wwaiting, t);
 		l->writer = t;
